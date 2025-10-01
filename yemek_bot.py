@@ -132,7 +132,11 @@ print("⏰ Zamanlanmış görevler:")
 print("   - Öğlen 12:00 TR: Öğle yemeği menüsü")
 print("   - Akşam 17:30 TR: Akşam yemeği menüsü")
 print("\n🔄 Bot çalışıyor...")
-
+# TEST - 2 dakika sonra mesaj
+from datetime import datetime, timedelta
+test_time = (datetime.now() + timedelta(minutes=2)).strftime("%H:%M")
+schedule.every().day.at(test_time).do(oglen_yemegi)
+print(f"⚡ TEST: {test_time} saatinde mesaj!")
 while True:
     schedule.run_pending()
     time.sleep(60)
