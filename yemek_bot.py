@@ -106,7 +106,9 @@ def pdf_oku():
 
 def oglen_yemegi():
     """Öğlen 12:00'de öğle yemeği menüsünü gönderir"""
+    print("🔍 oglen_yemegi fonksiyonu çağrıldı")
     menu = pdf_oku()
+    print(f"🔍 pdf_oku sonucu: {menu}")
     if menu:
         mesaj = f"🌞 <b>Öğle Vakti!</b>\n\n🍽️ <b>Bugünün Öğle Yemeği:</b>\n{menu['oglen']}"
         mesaj_gonder(mesaj)
