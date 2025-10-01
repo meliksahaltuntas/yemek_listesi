@@ -52,6 +52,63 @@ def pdf_oku():
                 text = page.extract_text()
                 
                 if tarih_str in text:
+                    # Tarihin yanındaki tüm metni al
+                    tarih_index = text.find(tarih_str)
+                    remaining_text = text[tarih_index + len(tarih_str):]
+                    
+                    # Bir sonraki tarihe kadar olan kısmı al
+                    next_date_index = len(remaining_text)
+                    for gun in gun_adlari:
+                        for ay in ay_adlari[1:]:
+                            pattern = f"{ay} 2025 {gun}"
+                            idx = remaining_text.find(pattern)
+                            if idx > 0 and idx < next_date_index:
+                                next_date_index = idx
+                    
+                    menu_text = remaining_text[:next_date_index].strip()
+                    
+                    # Satırlara böl ve temizle
+                    lines = [line.strip() for line in menu_text.split('\n') if line.strip()]
+                    
+                    # Satırları yaklaşık yarıya böl
+                    mid = len(lines) // 2
+                    ogle_menu = '\n'.join(lines[:mid])
+                    aksam_menu = '\n'.join(lines[mid:])
+                    
+                    return {
+                        "oglen": ogle_menu,
+                        "aksam": aksam_menu
+                    }
+            
+            print(f"❌ {tarih_str} tarihi PDF'de bulunamadı")
+            return None
+            
+    except Exception as e:
+        print(f"❌ PDF okuma hatası: {e}")
+        return None
+    """PDF'den bugünün menüsünü okur"""
+    try:
+        with open(PDF_DOSYASI, 'rb') as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            
+            from datetime import timezone, timedelta
+            tr_timezone = timezone(timedelta(hours=3))
+            bugun = datetime.now(tr_timezone)
+            
+            gun_adlari = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
+            ay_adlari = ['', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+            
+            gun_adi = gun_adlari[bugun.weekday()]
+            ay_adi = ay_adlari[bugun.month]
+            tarih_str = f"{bugun.day} {ay_adi} {bugun.year} {gun_adi}"
+            
+            print(f"Aranan tarih: {tarih_str}")
+            
+            for page in pdf_reader.pages:
+                text = page.extract_text()
+                
+                if tarih_str in text:
                     lines = text.split('\n')
                     
                     for i, line in enumerate(lines):
@@ -169,22 +226,45 @@ def pdf_oku():
 def oglen_yemegi():
     """Öğlen 12:00'de öğle yemeği menüsünü gönderir"""
     print("🔍 oglen_yemegi fonksiyonu çağrıldı")
+    
+    # Tarihi hazırla
+    from datetime import timezone, timedelta
+    tr_timezone = timezone(timedelta(hours=3))
+    bugun = datetime.now(tr_timezone)
+    gun_adlari = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
+    ay_adlari = ['', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+    gun_adi = gun_adlari[bugun.weekday()]
+    ay_adi = ay_adlari[bugun.month]
+    tarih_str = f"{bugun.day} {ay_adi} {bugun.year} {gun_adi}"
+    
     menu = pdf_oku()
     print(f"🔍 pdf_oku sonucu: {menu}")
     if menu:
-        mesaj = f"🌞 <b>Öğle Vakti!</b>\n\n🍽️ <b>Bugünün Öğle Yemeği:</b>\n{menu['oglen']}"
+        mesaj = f"🌞 <b>{tarih_str} - Öğle Vakti!</b>\n\n🍽️ <b>Bugünün Öğle Yemeği:</b>\n{menu['oglen']}"
         mesaj_gonder(mesaj)
     else:
-        mesaj_gonder("❌ Bugün için öğle yemeği menüsü bulunamadı.")
+        mesaj_gonder(f"❌ {tarih_str} için öğle yemeği menüsü bulunamadı.")
 
 def aksam_yemegi():
     """Akşam 17:30'da akşam yemeği menüsünü gönderir"""
+    # Tarihi hazırla
+    from datetime import timezone, timedelta
+    tr_timezone = timezone(timedelta(hours=3))
+    bugun = datetime.now(tr_timezone)
+    gun_adlari = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
+    ay_adlari = ['', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+    gun_adi = gun_adlari[bugun.weekday()]
+    ay_adi = ay_adlari[bugun.month]
+    tarih_str = f"{bugun.day} {ay_adi} {bugun.year} {gun_adi}"
+    
     menu = pdf_oku()
     if menu:
-        mesaj = f"🌆 <b>Akşam Yemeği Zamanı!</b>\n\n🍲 <b>Bugünün Akşam Yemeği:</b>\n{menu['aksam']}"
+        mesaj = f"🌆 <b>{tarih_str} - Akşam Yemeği Zamanı!</b>\n\n🍲 <b>Bugünün Akşam Yemeği:</b>\n{menu['aksam']}"
         mesaj_gonder(mesaj)
     else:
-        mesaj_gonder("❌ Bugün için akşam yemeği menüsü bulunamadı.")
+        mesaj_gonder(f"❌ {tarih_str} için akşam yemeği menüsü bulunamadı.")
 
 # Zamanlamaları ayarla (Türkiye saati için UTC+3 -> UTC'ye çevir)
 schedule.every().day.at("09:00").do(oglen_yemegi)   # 12:00 TR = 09:00 UTC
