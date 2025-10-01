@@ -1,0 +1,5 @@
+[build]
+
+[deploy]
+startCommand = "python yemek_bot.py"
+restartPolicyType = "always"
