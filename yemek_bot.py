@@ -276,13 +276,6 @@ print("   - Öğlen 12:00 TR: Öğle yemeği menüsü")
 print("   - Akşam 17:30 TR: Akşam yemeği menüsü")
 print("\n🔄 Bot çalışıyor...")
 
-# TEST - 2 dakika sonra mesaj gönder
-from datetime import timezone, timedelta
-test_time_utc = datetime.now(timezone.utc) + timedelta(minutes=2)
-test_time_str = test_time_utc.strftime("%H:%M")
-schedule.every().day.at(test_time_str).do(oglen_yemegi)
-print(f"⚡ TEST: UTC {test_time_str} saatinde öğle menüsü mesajı gelecek!")
-
 while True:
     schedule.run_pending()
     time.sleep(60)
