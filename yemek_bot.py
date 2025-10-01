@@ -34,6 +34,12 @@ def pdf_oku():
         with open(PDF_DOSYASI, 'rb') as file:
             pdf_reader = PyPDF2.PdfReader(file)
             
+             # İlk sayfayı yazdır - DEBUG
+            first_page_text = pdf_reader.pages[0].extract_text()
+            print("📄 PDF İlk Sayfa İçeriği:")
+            print(first_page_text[:500])  # İlk 500 karakter
+            print("---")
+            
             # Türkiye saati için timezone-aware datetime (UTC+3)
             from datetime import timezone, timedelta
             tr_timezone = timezone(timedelta(hours=3))
