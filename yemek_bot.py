@@ -34,12 +34,68 @@ def pdf_oku():
         with open(PDF_DOSYASI, 'rb') as file:
             pdf_reader = PyPDF2.PdfReader(file)
             
+            from datetime import timezone, timedelta
+            tr_timezone = timezone(timedelta(hours=3))
+            bugun = datetime.now(tr_timezone)
+            
+            gun_adlari = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
+            ay_adlari = ['', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+            
+            gun_adi = gun_adlari[bugun.weekday()]
+            ay_adi = ay_adlari[bugun.month]
+            tarih_str = f"{bugun.day} {ay_adi} {bugun.year} {gun_adi}"
+            
+            print(f"Aranan tarih: {tarih_str}")
+            
+            for page in pdf_reader.pages:
+                text = page.extract_text()
+                
+                if tarih_str in text:
+                    lines = text.split('\n')
+                    
+                    for i, line in enumerate(lines):
+                        if tarih_str in line:
+                            # Tarih satırından sonraki satırları topla
+                            # PDF'de format: Tarih | Öğle yemekleri | Akşam yemekleri
+                            menu_lines = []
+                            for j in range(i+1, min(i+20, len(lines))):
+                                next_line = lines[j].strip()
+                                # Yeni tarih başladıysa dur
+                                if any(gun in next_line for gun in gun_adlari) and any(ay in next_line for ay in ay_adlari):
+                                    break
+                                if next_line:
+                                    menu_lines.append(next_line)
+                            
+                            # Satırları ikiye böl - ilk yarısı öğle, ikinci yarısı akşam
+                            mid = len(menu_lines) // 2
+                            ogle_menu = '\n'.join(menu_lines[:mid]) if menu_lines[:mid] else "Bilgi yok"
+                            aksam_menu = '\n'.join(menu_lines[mid:]) if menu_lines[mid:] else "Bilgi yok"
+                            
+                            print(f"Bulunan menü - Öğle: {ogle_menu[:50]}...")
+                            
+                            return {
+                                "oglen": ogle_menu,
+                                "aksam": aksam_menu
+                            }
+            
+            print(f"❌ {tarih_str} tarihi PDF'de bulunamadı")
+            return None
+            
+    except Exception as e:
+        print(f"❌ PDF okuma hatası: {e}")
+        return None
+    """PDF'den bugünün menüsünü okur"""
+    try:
+        with open(PDF_DOSYASI, 'rb') as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            
              # İlk sayfayı yazdır - DEBUG
             first_page_text = pdf_reader.pages[0].extract_text()
             print("📄 PDF İlk Sayfa İçeriği:")
             print(first_page_text[:500])  # İlk 500 karakter
             print("---")
-            
+
             # Türkiye saati için timezone-aware datetime (UTC+3)
             from datetime import timezone, timedelta
             tr_timezone = timezone(timedelta(hours=3))
