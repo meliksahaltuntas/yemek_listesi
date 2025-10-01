@@ -34,8 +34,11 @@ def pdf_oku():
         with open(PDF_DOSYASI, 'rb') as file:
             pdf_reader = PyPDF2.PdfReader(file)
             
-            # Bugünün tarihini formatla (örn: "1 Eylül 2025 Pazartesi")
-            bugun = datetime.now()
+            # Türkiye saati için timezone-aware datetime (UTC+3)
+            from datetime import timezone, timedelta
+            tr_timezone = timezone(timedelta(hours=3))
+            bugun = datetime.now(tr_timezone)
+            
             gun_adlari = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
             ay_adlari = ['', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
                         'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
@@ -52,7 +55,6 @@ def pdf_oku():
                 
                 # Bugünün tarihini bul
                 if tarih_str in text:
-                    # Tarihin bulunduğu satırdan sonraki içeriği al
                     lines = text.split('\n')
                     tarih_index = -1
                     
@@ -62,11 +64,9 @@ def pdf_oku():
                             break
                     
                     if tarih_index != -1:
-                        # Öğle yemeği ve akşam yemeği metinlerini bul
                         ogle_yemegi = []
                         aksam_yemegi = []
                         
-                        # Basit parsing - tarihten sonraki satırları oku
                         collecting_ogle = False
                         collecting_aksam = False
                         
@@ -82,7 +82,6 @@ def pdf_oku():
                                 collecting_aksam = True
                                 continue
                             elif any(gun in line for gun in gun_adlari):
-                                # Yeni tarih başladı, dur
                                 break
                             
                             if line and collecting_ogle:
@@ -90,7 +89,6 @@ def pdf_oku():
                             elif line and collecting_aksam:
                                 aksam_yemegi.append(line)
                         
-                        # İlk 5-6 satırı al (genellikle menü bu kadar)
                         ogle_menu = '\n'.join(ogle_yemegi[:6]) if ogle_yemegi else "Bilgi yok"
                         aksam_menu = '\n'.join(aksam_yemegi[:6]) if aksam_yemegi else "Bilgi yok"
                         
@@ -99,6 +97,7 @@ def pdf_oku():
                             "aksam": aksam_menu
                         }
             
+            print(f"❌ {tarih_str} tarihi PDF'de bulunamadı")
             return None
             
     except Exception as e:
